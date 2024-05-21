@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import styles from "./CityItem.module.css";
 import { useCities } from "../context/CitiesContext";
+import Spinner from "./Spinner";
 
 const formatDate = (date) =>
   new Intl.DateTimeFormat("en", {
@@ -10,14 +11,15 @@ const formatDate = (date) =>
   }).format(new Date(date));
 
 function CityItem({ city }) {
-  const { currentCity, deleteCity } = useCities();
+  const { currentCity, deleteCity, isLoading } = useCities();
   const { id, cityName, date, position } = city;
 
   async function handleClick(e) {
     e.preventDefault();
     await deleteCity(cityName);
-    console.log(cityName);
   }
+
+  if (isLoading) return <Spinner />;
 
   return (
     <li>

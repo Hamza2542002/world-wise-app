@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useReducer } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
 import { useAuth } from "./FakeAuthContext";
 
 const CitiesContext = createContext();
@@ -63,14 +69,12 @@ function CitiesProvider({ children }) {
   useEffect(
     function () {
       async function fetchCities() {
-        console.log(user.id);
         dispatch({ type: "loading" });
         try {
           const res = await fetch(
             `http://localhost:8088/api/users/${user?.id}/cities`
           );
           const data = await res.json();
-          console.log(data);
           dispatch({ type: "cities/loaded", payload: data });
         } catch {
           dispatch({ type: "rejeted", payload: "Cannot Fetch data" });
@@ -82,23 +86,25 @@ function CitiesProvider({ children }) {
     [user]
   );
 
-  async function getCurrentCity(name) {
-    if (name === currentCity.cityName) return;
-    dispatch({ type: "loading" });
-    try {
-      const res = await fetch(
-        `http://localhost:8088/api/users/${user?.id}/cities/${name}`
-      );
-      const data = await res.json();
-      console.log(data);
-      dispatch({ type: "city/loaded", payload: data });
-    } catch {
-      dispatch({
-        type: "rejected",
-        payload: `Error Fetching City ${name}`,
-      });
-    }
-  }
+  const getCurrentCity = useCallback(
+    async function getCurrentCity(name) {
+      if (name === currentCity.cityName) return;
+      dispatch({ type: "loading" });
+      try {
+        const res = await fetch(
+          `http://localhost:8088/api/users/${user?.id}/cities/${name}`
+        );
+        const data = await res.json();
+        dispatch({ type: "city/loaded", payload: data });
+      } catch {
+        dispatch({
+          type: "rejected",
+          payload: `Error Fetching City ${name}`,
+        });
+      }
+    },
+    [currentCity.cityName, user]
+  );
 
   async function postCity(newCity) {
     dispatch({ type: "loading" });
@@ -113,8 +119,7 @@ function CitiesProvider({ children }) {
           },
         }
       );
-      const data = await res.json();
-      console.log(data);
+      await res.json();
       dispatch({ type: "city/created", payload: newCity });
     } catch {
       dispatch({ type: "rejected", payload: "Error Adding City" });
@@ -124,9 +129,7 @@ function CitiesProvider({ children }) {
   async function deleteCity(name) {
     dispatch({ type: "loading" });
     try {
-      const nwecities = user.cities.filter((city) => city.id !== name);
-      console.log(nwecities);
-      console.log(name);
+      user.cities.filter((city) => city.id !== name);
       await fetch(
         `http://localhost:8088/api/users/${user?.id}/cities/${name}`,
         {
@@ -140,7 +143,6 @@ function CitiesProvider({ children }) {
         `http://localhost:8088/api/users/${user?.id}/cities`
       );
       const data = await res.json();
-      console.log(data);
       dispatch({ type: "city/deleted", payload: data });
     } catch {
       dispatch({ type: "rejected", payload: `Error Deleting City ${name}` });

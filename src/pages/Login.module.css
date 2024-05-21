@@ -39,5 +39,12 @@
 
 .error {
   font-size: 13px;
-  color: #d64545;
+  color: #ecece2;
+}
+
+.link {
+  color: #ecece2;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 20px;
 }

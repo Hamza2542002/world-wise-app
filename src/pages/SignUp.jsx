@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./SignUp.module.css";
 import Button from "../components/Button";
 import { useAuth } from "../context/FakeAuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import Logo from "../components/Logo";
 function SignUp() {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { signup, errorMessage, isAuth } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(errorMessage);
+
+  useEffect(
+    function () {
+      setError("");
+      if (isAuth) navigate("/app", { replace: true });
+    },
+    [isAuth, navigate]
+  );
 
   async function handleSignup(e) {
     const user = {
@@ -19,12 +29,15 @@ function SignUp() {
       // cities: [],
     };
     e.preventDefault();
-    await signup(user);
-    navigate("/app/cities");
+    if (name && email && password) {
+      await signup(user);
+      setError(errorMessage);
+    }
   }
 
   return (
     <main className={styles.login}>
+      <Logo />
       <form className={styles.form}>
         <div className={styles.row}>
           <label htmlFor="name">Your Name</label>
@@ -33,6 +46,7 @@ function SignUp() {
             id="name"
             onChange={(e) => {
               setName(e.target.value);
+              setError("");
             }}
             value={name}
           />
@@ -44,6 +58,7 @@ function SignUp() {
             id="email"
             onChange={(e) => {
               setEmail(e.target.value);
+              setError("");
             }}
             value={email}
           />
@@ -53,14 +68,24 @@ function SignUp() {
           <input
             type="password"
             id="password"
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError("");
+            }}
             value={password}
           />
         </div>
+        {error && <p className={styles.error}>{errorMessage}</p>}
         <div>
           <Button type="primary" onClick={handleSignup}>
             SignUp
           </Button>
+          <p className={styles.link}>
+            already have account?
+            <Link className={styles.link} to="/login">
+              Login
+            </Link>
+          </p>
         </div>
       </form>
     </main>

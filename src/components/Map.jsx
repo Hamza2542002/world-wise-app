@@ -53,7 +53,7 @@ function Map() {
               key={index}
             >
               <Popup>
-                {city.cityName} <br /> Easily customizable.
+                {city.cityName} <br /> {city?.notes}
               </Popup>
             </Marker>
           );

@@ -67,6 +67,7 @@ function Form() {
     useReducer(reducer, initialState);
   const [date, setdate] = useState(new Date());
   const [notes, setNotes] = useState("");
+
   useEffect(
     function () {
       if (!formLat && !formLng) return;
@@ -77,7 +78,6 @@ function Form() {
             `${BASE_URL}?latitude=${formLat}&longitude=${formLng}`
           );
           const data = await res.json();
-          console.log(data);
           if (data.countryCode === "")
             throw new Error("There is No City Here ,Click Some where Else");
           dispatch({
@@ -111,7 +111,6 @@ function Form() {
       id: new Date().getSeconds(),
       position: { lat: formLat, lng: formLng },
     };
-    console.log(newCity);
     await postCity(newCity);
     navigate("/app/cities");
   }
@@ -119,6 +118,8 @@ function Form() {
   function handleInputChange(e) {}
 
   if (isLoadingLoc) return <Spinner />;
+
+  if (isLoading) return <Spinner />;
 
   if (error.length > 0) return <Message message={error} />;
 

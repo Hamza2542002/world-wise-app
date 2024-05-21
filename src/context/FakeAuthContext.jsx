@@ -6,6 +6,7 @@ const initialState = {
   user: null,
   users: [],
   errorMessage: "",
+  waiting: false,
 };
 function reducer(state, action) {
   switch (action.type) {
@@ -14,7 +15,7 @@ function reducer(state, action) {
         ...state,
         users: action.payload,
       };
-    case "login/error":
+    case "error":
       return {
         ...state,
         errorMessage: action.payload,
@@ -44,12 +45,17 @@ function reducer(state, action) {
         user: null,
         isAuth: false,
       };
+    case "waiting":
+      return {
+        ...state,
+        waiting: action.payload,
+      };
     default:
       break;
   }
 }
 function AuthProvider({ children }) {
-  const [{ isAuth, user, errorMessage }, dispatch] = useReducer(
+  const [{ isAuth, user, errorMessage, waiting }, dispatch] = useReducer(
     reducer,
     initialState
   );
@@ -59,7 +65,6 @@ function AuthProvider({ children }) {
       try {
         const res = await fetch("http://localhost:8088/api/users/login");
         const data = await res.json();
-        console.log(data);
         dispatch({ type: "users/loaded", payload: data });
       } catch {}
     }
@@ -67,7 +72,9 @@ function AuthProvider({ children }) {
   }, []);
 
   async function signup(user) {
-    console.log(JSON.stringify(user));
+    dispatch({ type: "error", payload: "" });
+    dispatch({ type: "waiting", payload: true });
+
     try {
       const res = await fetch("http://localhost:8088/api/users/register", {
         method: "POST",
@@ -78,23 +85,26 @@ function AuthProvider({ children }) {
       });
 
       const data = await res.json();
-      console.log(data);
       if (data.message === "User has registered successfully!") {
         const res2 = await fetch(`http://localhost:8088/api/users/${data.id}`);
         const user = await res2.json();
-        console.log(user);
         dispatch({
           type: "user/created",
           payload: user,
         });
+      } else {
+        throw new Error(data.message);
       }
     } catch (error) {
-      console.log(error);
+      dispatch({ type: "error", payload: error.message });
+    } finally {
+      dispatch({ type: "waiting", payload: false });
     }
   }
 
   async function login(user) {
-    console.log(JSON.stringify(user));
+    dispatch({ type: "error", payload: "" });
+    dispatch({ type: "waiting", payload: true });
     try {
       const res = await fetch("http://localhost:8088/api/users/login", {
         method: "POST",
@@ -105,18 +115,20 @@ function AuthProvider({ children }) {
       });
 
       const data = await res.json();
-      console.log(data);
       if (data.message === "User logged in successfully!") {
         const res2 = await fetch(`http://localhost:8088/api/users/${data.id}`);
         const user = await res2.json();
-        console.log(user);
         dispatch({
           type: "user/logedin",
           payload: user,
         });
+      } else {
+        throw new Error(data.message);
       }
     } catch (error) {
-      console.log(error);
+      dispatch({ type: "error", payload: error.message });
+    } finally {
+      dispatch({ type: "waiting", payload: false });
     }
   }
 
@@ -130,6 +142,7 @@ function AuthProvider({ children }) {
         login,
         logout,
         signup,
+        waiting,
         user,
         isAuth,
         errorMessage,

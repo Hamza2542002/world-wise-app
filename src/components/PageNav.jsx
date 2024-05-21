@@ -17,11 +17,13 @@ function AppNav() {
         <li>
           <NavLink to={"/pricing"}>Pricing</NavLink>
         </li>
-        <li>
-          <NavLink className={styles.ctaLink} to={"login"}>
-            Login
-          </NavLink>
-        </li>
+        {!isAuth && (
+          <li>
+            <NavLink className={styles.ctaLink} to={"/login"}>
+              Login
+            </NavLink>
+          </li>
+        )}
       </ul>
     </div>
   );

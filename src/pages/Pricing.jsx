@@ -7,7 +7,6 @@ export default function Product() {
     <>
       <main className={styles.product}>
         <PageNav />
-
         <section>
           <div>
             <h2>
